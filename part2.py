@@ -15,7 +15,7 @@ spark = (
 )
 sc = spark.sparkContext
 
-reviews_path = r"D:\CS236_DATA\Electronics_5.json"
+reviews_path = r"/home/wzhen033/CS236/CS236-Project/Datasets/Electronics_5.json"
 df_reviews = spark.read.json(reviews_path)
 
 df_labeled = df_reviews.withColumn(
