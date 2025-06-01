@@ -20,13 +20,13 @@ os.environ['SPARK_DRIVER_BIND_ADDRESS'] = '127.0.0.1'
 spark = sparknlp.start()
 
 # Load datasets
-reviews_path = "/home/wzhen033/CS236/CS236-Project/Datasets/Electronics_5.json"
-metadata_path = "/home/wzhen033/CS236/CS236-Project/Datasets/AmazonElectronicsMetadata.csv"
+reviews_path = "Datasets/Electronics_5.json"
+metadata_path = "Datasets/ElectronicsMetadata.csv"
 
 df_reviews = spark.read.json(reviews_path)
 df_metadata = spark.read.csv(metadata_path, header=True, inferSchema=True)
 
-df_dofin = spark.read.option("header", True).csv("/home/wzhen033/CS236/CS236-Project/Datasets/DatafinitiElectronicsProductData.csv")
+df_dofin = spark.read.option("header", True).csv("Datasets/ElectronicsProductData.csv")
 
 # Clean data
 df_reviews = df_reviews.dropna(subset=["asin", "reviewText", "overall"]).dropDuplicates(["asin", "reviewText"])
@@ -65,10 +65,10 @@ df_final = (
 # Write to CSV
 df_final.select("asin", "brand", "reviewText", "predicted_sentiment", "sentiment_index", "vote_count", "review_length", "overall") \
     .write.mode("overwrite").option("header", True) \
-    .csv("/home/wzhen033/CS236/CS236-Project/df_final")
+    .csv("df_final")
 
 # Read back final
-df_final = spark.read.option("header", True).csv("/home/wzhen033/CS236/CS236-Project/df_final")
+df_final = spark.read.option("header", True).csv("df_final")
 
 # Cast types for analysis
 df_final = df_final.withColumn("vote_count", col("vote_count").cast("int")) \
@@ -78,7 +78,7 @@ df_final = df_final.withColumn("vote_count", col("vote_count").cast("int")) \
 
 # Write to SQLite
 df_pandas = df_final.toPandas()
-sqlite_path = "/home/wzhen033/CS236/CS236-Project/final_results.db"
+sqlite_path = "final_results.db"
 conn = sqlite3.connect(sqlite_path)
 df_pandas.to_sql("review_sentiment", conn, if_exists="replace", index=False)
 
@@ -138,7 +138,7 @@ df_review_length_summary = df_final.withColumn(
  )
 
 df_review_length_summary_pd = df_review_length_summary.toPandas()
-conn = sqlite3.connect("/home/wzhen033/CS236/CS236-Project/final_results.db")
+conn = sqlite3.connect("final_results.db")
 df_review_length_summary_pd.to_sql("review_length_summary", conn, if_exists="replace", index=False)
 conn.close()
 
@@ -152,15 +152,16 @@ df_combined = df_final.join(df_dofin, on="asin", how="inner")
 df_re = df_combined.filter(col("`reviews.doRecommend`").isNotNull()) \
     .groupBy("`reviews.doRecommend`") \
     .agg(
+        col("`reviews.doRecommend`").alias("Recommendation"),
         avg("sentiment_index").alias("avg_sentiment"),
         avg("vote_count").alias("avg_votes"),
         count("*").alias("count")
     )
-
+df_re = df_re.drop(col("`reviews.doRecommend`"))
 df_re.show()
 
 df_q6_pd = df_re.toPandas()
-conn = sqlite3.connect("/home/wzhen033/CS236/CS236-Project/final_results.db")
+conn = sqlite3.connect("final_results.db")
 df_q6_pd.to_sql("df_recommend_sentiment", conn, if_exists="replace", index=False)
 
 # merge query

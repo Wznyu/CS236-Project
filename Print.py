@@ -18,5 +18,4 @@ printFromDB(conn, "SELECT * FROM   brand_stats;")
 printFromDB(conn, "SELECT * FROM category_stats;")
 printFromDB(conn, "SELECT * FROM  monthly_reviews;")
 printFromDB(conn, "SELECT * FROM   yearly_reviews;")
-
 conn.close()
