@@ -16,17 +16,21 @@ os.environ['SPARK_LOCAL_IP'] = '127.0.0.1'
 os.environ['SPARK_DRIVER_HOST'] = '127.0.0.1'
 os.environ['SPARK_DRIVER_BIND_ADDRESS'] = '127.0.0.1'
 
+import sys
+os.environ['PYSPARK_PYTHON'] = sys.executable
+os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
+
 # Initialize Spark
 spark = sparknlp.start()
 
 # Load datasets
 reviews_path = "Datasets/Electronics_5.json"
-metadata_path = "Datasets/ElectronicsMetadata.csv"
+metadata_path = "Datasets/Amazon Electronics Metadata.csv"
 
 df_reviews = spark.read.json(reviews_path)
 df_metadata = spark.read.csv(metadata_path, header=True, inferSchema=True)
 
-df_dofin = spark.read.option("header", True).csv("Datasets/ElectronicsProductData.csv")
+df_dofin = spark.read.option("header", True).csv("Datasets/DatafinitiElectronicsProductData.csv")
 
 # Clean data
 df_reviews = df_reviews.dropna(subset=["asin", "reviewText", "overall"]).dropDuplicates(["asin", "reviewText"])
